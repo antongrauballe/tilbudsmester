@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="da">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=1440, initial-scale=1"/>
+<title>TilbudsMester — App Design</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="tokens.css"/>
+<style>
+  html, body, #root { height: 100%; margin: 0; }
+  body { background: #E8E2D4; }
+  .tm-nav {
+    position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+    z-index: 200; background: rgba(255,253,250,0.95); backdrop-filter: blur(16px);
+    border: 1px solid var(--tm-line); border-radius: 999px; padding: 6px;
+    display: flex; gap: 2px; box-shadow: var(--tm-shadow-md);
+    font-family: var(--tm-sans);
+  }
+  .tm-nav button {
+    padding: 8px 16px; border: none; background: transparent; cursor: pointer;
+    border-radius: 999px; font-size: 13px; font-weight: 500; color: var(--tm-ink-2);
+    font-family: inherit;
+  }
+  .tm-nav button.active { background: var(--tm-ink); color: #fff; }
+  .tm-nav button:hover:not(.active) { background: var(--tm-cream-2); }
+  .tm-canvas-label {
+    position: absolute; top: -28px; left: 0;
+    font-family: var(--tm-mono); font-size: 11px; color: var(--tm-ink-3);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="icons.jsx"></script>
+<script type="text/babel" src="ios-frame.jsx"></script>
+<script type="text/babel" src="browser-window.jsx"></script>
+<script type="text/babel" src="landing.jsx"></script>
+<script type="text/babel" src="auth-screens.jsx"></script>
+<script type="text/babel" src="mobile-screens.jsx"></script>
+<script type="text/babel" src="web-screens.jsx"></script>
+<script type="text/babel" src="web-screens-2.jsx"></script>
+
+<script type="text/babel">
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#FF4A00",
+  "accentDark": "#E43F00",
+  "accentLight": "#FFF1E8",
+  "newQuoteVariant": "split",
+  "appName": "TilbudsMester"
+}/*EDITMODE-END*/;
+
+function useTweaks() {
+  const [t, setT] = React.useState(TWEAK_DEFAULTS);
+  React.useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--tm-orange', t.accent);
+    root.style.setProperty('--tm-orange-600', t.accentDark);
+    root.style.setProperty('--tm-orange-50', t.accentLight);
+  }, [t]);
+  return [t, setT];
+}
+
+function TweaksPanel({ tweaks, setTweaks }) {
+  const [open, setOpen] = React.useState(false);
+  const [enabled, setEnabled] = React.useState(false);
+
+  React.useEffect(() => {
+    const onMsg = (e) => {
+      if (e.data?.type === '__activate_edit_mode') { setEnabled(true); setOpen(true); }
+      if (e.data?.type === '__deactivate_edit_mode') { setEnabled(false); setOpen(false); }
+    };
+    window.addEventListener('message', onMsg);
+    window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+    return () => window.removeEventListener('message', onMsg);
+  }, []);
+
+  const update = (k, v) => {
+    const next = { ...tweaks, [k]: v };
+    setTweaks(next);
+    window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { [k]: v } }, '*');
+  };
+
+  if (!enabled) return null;
+
+  const accents = [
+    { name: 'Orange (standard)', c: '#FF4A00', d: '#E43F00', l: '#FFF1E8' },
+    { name: 'Grøn', c: '#2E7D4F', d: '#1F5A38', l: '#E6F3EB' },
+    { name: 'Blå', c: '#2B4C8C', d: '#1E3668', l: '#E7EDF7' },
+    { name: 'Terracotta', c: '#C45A2C', d: '#8E3E1F', l: '#F7E8DD' },
+  ];
+
+  return (
+    <div style={{
+      position: 'fixed', bottom: 20, right: 20, zIndex: 300,
+      background: 'var(--tm-paper)', borderRadius: 16, boxShadow: 'var(--tm-shadow-lg)',
+      border: '1px solid var(--tm-line)', width: 280, fontFamily: 'var(--tm-sans)',
+      overflow: 'hidden',
+    }}>
+      <button onClick={() => setOpen(!open)} style={{
+        width: '100%', padding: '12px 16px', background: 'var(--tm-ink)', color: '#fff',
+        border: 'none', cursor: 'pointer', display: 'flex', justifyContent: 'space-between',
+        alignItems: 'center', fontSize: 13, fontWeight: 600,
+      }}>
+        <span>✦ Tweaks</span><span>{open ? '−' : '+'}</span>
+      </button>
+      {open && (
+        <div style={{ padding: 16 }}>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--tm-ink-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Accent-farve</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 16 }}>
+            {accents.map(a => (
+              <button key={a.c} title={a.name} onClick={() => { update('accent', a.c); update('accentDark', a.d); update('accentLight', a.l); }} style={{
+                aspectRatio: '1', border: tweaks.accent === a.c ? '2px solid var(--tm-ink)' : '1px solid var(--tm-line)',
+                borderRadius: 8, background: a.c, cursor: 'pointer',
+              }}/>
+            ))}
+          </div>
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--tm-ink-3)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 8 }}>Nyt-tilbud layout</div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            {[
+              { v: 'split', l: 'Split — form + preview' },
+              { v: 'wizard', l: 'Wizard — 4 trin' },
+              { v: 'compact', l: 'Compact — én boks' },
+            ].map(o => (
+              <button key={o.v} onClick={() => update('newQuoteVariant', o.v)} style={{
+                padding: '8px 10px', border: '1px solid var(--tm-line)', borderRadius: 8,
+                background: tweaks.newQuoteVariant === o.v ? 'var(--tm-orange-50)' : 'var(--tm-paper)',
+                color: tweaks.newQuoteVariant === o.v ? 'var(--tm-orange-600)' : 'var(--tm-ink-2)',
+                fontSize: 12, fontWeight: 500, cursor: 'pointer', textAlign: 'left',
+                fontFamily: 'var(--tm-sans)',
+              }}>{o.l}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const VIEWS = {
+  landing: 'Landing',
+  auth: 'Login / Signup',
+  onboarding: 'Onboarding',
+  mobile: 'Mobil app',
+  web: 'Web app',
+  variants: 'Varianter',
+};
+
+function App() {
+  const [tweaks, setTweaks] = useTweaks();
+  const [view, setView] = React.useState(() => localStorage.getItem('tm.view') || 'landing');
+  const [mobileScreen, setMobileScreen] = React.useState('dashboard');
+  const [webScreen, setWebScreen] = React.useState('dashboard');
+  const [authScreen, setAuthScreen] = React.useState('login');
+
+  React.useEffect(() => { localStorage.setItem('tm.view', view); }, [view]);
+
+  const goMobile = (s) => {
+    if (s === 'history') { setWebScreen('quotes'); setView('web'); return; }
+    setMobileScreen(s);
+  };
+  const goWeb = (s) => {
+    if (s === 'new') { setWebScreen('new'); return; }
+    setWebScreen(s);
+  };
+
+  return (
+    <div style={{ minHeight: '100vh', background: '#E8E2D4' }}>
+      <nav className="tm-nav">
+        {Object.entries(VIEWS).map(([k, v]) => (
+          <button key={k} className={view === k ? 'active' : ''} onClick={() => setView(k)}>{v}</button>
+        ))}
+      </nav>
+
+      <div data-screen-label={`01 ${VIEWS[view]}`}>
+        {view === 'landing' && (
+          <div style={{ height: '100vh', overflow: 'auto', background: 'var(--tm-cream)' }} className="tm-scroll">
+            <Landing/>
+          </div>
+        )}
+
+        {view === 'auth' && (
+          <div style={{ padding: '80px 40px 40px' }}>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20, justifyContent: 'center' }}>
+              {[['login', 'Log ind'], ['signup', 'Opret konto']].map(([k, l]) => (
+                <button key={k} onClick={() => setAuthScreen(k)} style={{
+                  padding: '6px 14px', border: '1px solid var(--tm-line)', borderRadius: 999,
+                  background: authScreen === k ? 'var(--tm-ink)' : 'var(--tm-paper)',
+                  color: authScreen === k ? '#fff' : 'var(--tm-ink-2)', fontSize: 12, cursor: 'pointer',
+                  fontFamily: 'var(--tm-sans)',
+                }}>{l}</button>
+              ))}
+            </div>
+            <div style={{ maxWidth: 1200, margin: '0 auto', height: 780, borderRadius: 20, overflow: 'hidden', boxShadow: 'var(--tm-shadow-lg)' }}>
+              {authScreen === 'login' ? <WebLogin onNav={(s) => { if (s === 'signup') setAuthScreen('signup'); else setView('web'); }}/>
+                : <WebSignup onNav={(s) => { if (s === 'onboarding') setView('onboarding'); else setView('web'); }}/>}
+            </div>
+          </div>
+        )}
+
+        {view === 'onboarding' && (
+          <div style={{ padding: '80px 40px 40px', maxWidth: 1200, margin: '0 auto' }}>
+            <div style={{ height: 780, borderRadius: 20, overflow: 'hidden', boxShadow: 'var(--tm-shadow-lg)' }}>
+              <WebOnboarding onNav={() => setView('web')}/>
+            </div>
+          </div>
+        )}
+
+        {view === 'mobile' && (
+          <MobileCanvas screen={mobileScreen} goMobile={goMobile}/>
+        )}
+
+        {view === 'web' && (
+          <WebCanvas screen={webScreen} goWeb={goWeb} variant={tweaks.newQuoteVariant}/>
+        )}
+
+        {view === 'variants' && (
+          <VariantsCanvas/>
+        )}
+      </div>
+
+      <TweaksPanel tweaks={tweaks} setTweaks={setTweaks}/>
+    </div>
+  );
+}
+
+function MobileCanvas({ screen, goMobile }) {
+  const screens = [
+    { id: 'dashboard', label: 'Oversigt' },
+    { id: 'new', label: 'Nyt tilbud' },
+    { id: 'generating', label: 'AI genererer' },
+    { id: 'preview', label: 'Tilbud preview' },
+    { id: 'customers', label: 'Kunder' },
+    { id: 'settings', label: 'Profil' },
+  ];
+  const render = (s) => {
+    const comps = {
+      dashboard: <MobileDashboard onNav={goMobile}/>,
+      new: <MobileNew onNav={goMobile}/>,
+      generating: <MobileGenerating onNav={goMobile}/>,
+      preview: <MobilePreview onNav={goMobile}/>,
+      customers: <MobileCustomers onNav={goMobile}/>,
+      settings: <MobileSettings onNav={goMobile}/>,
+    };
+    return comps[s];
+  };
+  return (
+    <div style={{ padding: '90px 40px 40px' }}>
+      <div style={{ display: 'flex', gap: 30, overflowX: 'auto', paddingBottom: 40 }} className="tm-scroll">
+        {screens.map(s => (
+          <div key={s.id} style={{ flexShrink: 0, position: 'relative' }}>
+            <div className="tm-canvas-label">{s.label}</div>
+            <IOSDevice width={390} height={844}>
+              {render(s.id)}
+            </IOSDevice>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function WebCanvas({ screen, goWeb, variant }) {
+  const screens = [
+    { id: 'dashboard', label: 'Oversigt', comp: <WebDashboard onNav={goWeb}/> },
+    { id: 'new', label: 'Nyt tilbud', comp: <WebNew onNav={goWeb} variant={variant}/> },
+    { id: 'preview', label: 'Tilbud preview', comp: <WebPreview onNav={goWeb}/> },
+    { id: 'quotes', label: 'Tilbuds-liste', comp: <WebQuotes onNav={goWeb}/> },
+    { id: 'customers', label: 'Kunder', comp: <WebCustomers onNav={goWeb}/> },
+    { id: 'templates', label: 'Skabeloner', comp: <WebTemplates onNav={goWeb}/> },
+    { id: 'stats', label: 'Statistik', comp: <WebStats onNav={goWeb}/> },
+    { id: 'settings', label: 'Abonnement', comp: <WebSettings onNav={goWeb}/> },
+  ];
+  return (
+    <div style={{ padding: '90px 40px 40px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 60 }}>
+        {screens.map(s => (
+          <div key={s.id} style={{ position: 'relative' }}>
+            <div className="tm-canvas-label">{s.label}</div>
+            <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--tm-shadow-lg)' }}>
+              <ChromeWindow width={1320} height={820} url={`app.tilbudsmester.dk/${s.id}`} tabs={[{ title: 'TilbudsMester' }]}>
+                {s.comp}
+              </ChromeWindow>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Small web-customers screen
+function WebCustomers({ onNav }) {
+  const customers = [
+    { n: 'Henrik Sørensen', e: 'henrik@example.dk', loc: 'Rødovre', count: 3, total: '127.400 kr' },
+    { n: 'Anne Larsen', e: 'anne.larsen@mail.dk', loc: 'Frederiksberg', count: 2, total: '64.200 kr' },
+    { n: 'Byghuset A/S', e: 'post@byghuset.dk', loc: 'Glostrup', count: 8, total: '412.600 kr' },
+    { n: 'Jens & Marie Holm', e: 'holm@web.dk', loc: 'Vanløse', count: 1, total: '18.400 kr' },
+    { n: 'Kirsten Mortensen', e: 'kirsten.m@gmail.com', loc: 'Valby', count: 4, total: '89.750 kr' },
+    { n: 'Pia Jensen', e: 'pia@jensen.dk', loc: 'Herlev', count: 2, total: '74.600 kr' },
+  ];
+  return (
+    <WebLayout active="customers" onNav={onNav} title="Kunder">
+      <div className="tm-card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
+          <thead>
+            <tr style={{ background: 'var(--tm-cream-2)', color: 'var(--tm-ink-3)', fontSize: 11, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontWeight: 600 }}>Kunde</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontWeight: 600 }}>E-mail</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontWeight: 600 }}>Lokation</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontWeight: 600 }}>Tilbud</th>
+              <th style={{ textAlign: 'left', padding: '12px 20px', fontWeight: 600 }}>Total omsætning</th>
+            </tr>
+          </thead>
+          <tbody>
+            {customers.map(c => (
+              <tr key={c.n} style={{ borderBottom: '1px solid var(--tm-line)', cursor: 'pointer' }}>
+                <td style={{ padding: '14px 20px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                    <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--tm-sand)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--tm-terracotta)', fontWeight: 600, fontSize: 12, fontFamily: 'var(--tm-display)' }}>
+                      {c.n.split(' ').map(w => w[0]).join('').slice(0, 2)}
+                    </div>
+                    <strong>{c.n}</strong>
+                  </div>
+                </td>
+                <td style={{ padding: '14px 20px', color: 'var(--tm-ink-3)' }}>{c.e}</td>
+                <td style={{ padding: '14px 20px' }}>{c.loc}</td>
+                <td style={{ padding: '14px 20px' }}>{c.count}</td>
+                <td style={{ padding: '14px 20px', fontFamily: 'var(--tm-mono)', fontWeight: 600 }}>{c.total}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </WebLayout>
+  );
+}
+
+// Variants view — 3 versions of the main "new quote" screen side-by-side
+function VariantsCanvas() {
+  return (
+    <div style={{ padding: '90px 40px 40px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto 40px', textAlign: 'center' }}>
+        <div style={{ fontFamily: 'var(--tm-display)', fontSize: 32, fontWeight: 500, letterSpacing: '-0.02em' }}>3 variationer af "Nyt tilbud"</div>
+        <div style={{ fontSize: 14, color: 'var(--tm-ink-3)', marginTop: 8 }}>Samme funktion — tre interaktioner. Skift via Tweaks-panel nederst til højre.</div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 30 }}>
+        {[
+          { label: 'A · Split-view (form + live preview)', v: 'split' },
+          { label: 'B · Wizard (4 trin, guidet)', v: 'wizard' },
+          { label: 'C · Compact (én samlet boks)', v: 'compact' },
+        ].map(x => (
+          <div key={x.v} style={{ position: 'relative' }}>
+            <div className="tm-canvas-label">{x.label}</div>
+            <div style={{ borderRadius: 12, overflow: 'hidden', boxShadow: 'var(--tm-shadow-lg)', transform: 'scale(0.55)', transformOrigin: 'top left', width: 1320, height: 820 }}>
+              <ChromeWindow width={1320} height={820} url="app.tilbudsmester.dk/new" tabs={[{ title: 'TilbudsMester' }]}>
+                <WebNew onNav={() => {}} variant={x.v}/>
+              </ChromeWindow>
+            </div>
+            <div style={{ height: 820 * 0.55 }}/>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+
+</body>
+</html>

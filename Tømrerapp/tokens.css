@@ -1,0 +1,136 @@
+/* TilbudsMester — Design tokens
+   Zapier-inspired: warm orange accent, cream base, håndværker-warmth */
+
+:root {
+  /* Brand */
+  --tm-orange: #FF4A00;
+  --tm-orange-600: #E43F00;
+  --tm-orange-50: #FFF1E8;
+  --tm-orange-100: #FFE1CC;
+  --tm-terracotta: #C45A2C;
+  --tm-sand: #F3E9DB;
+
+  /* Neutrals — warm */
+  --tm-cream: #FFF8F1;
+  --tm-cream-2: #FAF2E6;
+  --tm-paper: #FFFDFA;
+  --tm-ink: #1E1B17;
+  --tm-ink-2: #3A342D;
+  --tm-ink-3: #6B645B;
+  --tm-muted: #A9A195;
+  --tm-line: #EADFCD;
+  --tm-line-strong: #D9CBB4;
+
+  /* Status */
+  --tm-green: #2E7D4F;
+  --tm-green-50: #E6F3EB;
+  --tm-red: #C0392B;
+  --tm-red-50: #FCEAE7;
+  --tm-blue: #2B4C8C;
+
+  /* Type */
+  --tm-sans: "Inter", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --tm-display: "Fraunces", "Iowan Old Style", Georgia, serif;
+  --tm-mono: "JetBrains Mono", "SF Mono", ui-monospace, Menlo, monospace;
+
+  /* Radii */
+  --tm-r-sm: 8px;
+  --tm-r-md: 12px;
+  --tm-r-lg: 18px;
+  --tm-r-xl: 24px;
+
+  /* Shadows */
+  --tm-shadow-sm: 0 1px 2px rgba(30, 20, 10, 0.06), 0 1px 3px rgba(30, 20, 10, 0.04);
+  --tm-shadow-md: 0 4px 12px rgba(30, 20, 10, 0.06), 0 1px 3px rgba(30, 20, 10, 0.04);
+  --tm-shadow-lg: 0 20px 40px -8px rgba(30, 20, 10, 0.12), 0 8px 16px -4px rgba(30, 20, 10, 0.06);
+  --tm-shadow-orange: 0 8px 24px -6px rgba(255, 74, 0, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: var(--tm-sans);
+  color: var(--tm-ink);
+  background: var(--tm-cream);
+  -webkit-font-smoothing: antialiased;
+  margin: 0;
+}
+
+/* Reusable primitives */
+.tm-btn {
+  font-family: var(--tm-sans);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: -0.01em;
+  border-radius: 10px;
+  padding: 12px 20px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.08s ease, background 0.15s ease, box-shadow 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.tm-btn:active { transform: translateY(1px); }
+.tm-btn--primary {
+  background: var(--tm-orange);
+  color: #fff;
+  box-shadow: var(--tm-shadow-orange);
+}
+.tm-btn--primary:hover { background: var(--tm-orange-600); }
+.tm-btn--secondary {
+  background: var(--tm-ink);
+  color: #fff;
+}
+.tm-btn--secondary:hover { background: var(--tm-ink-2); }
+.tm-btn--ghost {
+  background: transparent;
+  color: var(--tm-ink);
+  border: 1px solid var(--tm-line-strong);
+}
+.tm-btn--ghost:hover { background: var(--tm-cream-2); }
+
+.tm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  background: var(--tm-orange-50);
+  color: var(--tm-orange-600);
+}
+
+.tm-card {
+  background: var(--tm-paper);
+  border: 1px solid var(--tm-line);
+  border-radius: var(--tm-r-lg);
+  box-shadow: var(--tm-shadow-sm);
+}
+
+/* Striped placeholder utility */
+.tm-placeholder {
+  background-image: repeating-linear-gradient(
+    45deg,
+    var(--tm-sand),
+    var(--tm-sand) 8px,
+    var(--tm-cream-2) 8px,
+    var(--tm-cream-2) 16px
+  );
+  color: var(--tm-ink-3);
+  font-family: var(--tm-mono);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--tm-r-md);
+}
+
+/* Scrollbars — subtle */
+.tm-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.tm-scroll::-webkit-scrollbar-thumb { background: var(--tm-line-strong); border-radius: 4px; }
+.tm-scroll::-webkit-scrollbar-track { background: transparent; }
