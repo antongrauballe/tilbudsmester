@@ -1,5 +1,6 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -7,7 +8,21 @@ import { useEffect, useRef, useState } from "react";
 const LOOP_DETECTION_KEY = "signin_attempt_ts";
 const LOOP_THRESHOLD_MS = 30000;
 
-export default function SignIn() {
+export default function SignInPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center min-h-screen">
+          <div className="text-tm-ink-2">Indlæser…</div>
+        </div>
+      }
+    >
+      <SignIn />
+    </Suspense>
+  );
+}
+
+function SignIn() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
