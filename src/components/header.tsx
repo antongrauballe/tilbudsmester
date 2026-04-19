@@ -1,6 +1,11 @@
+"use client";
+
 import { Icon } from "@/components/icon";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
+  const { isAuthenticated, userName, login, logout } = useAuth();
+
   return (
     <header>
       <div className="flex justify-between items-center mx-auto px-5 sm:px-8 lg:px-12 py-5 max-w-[1280px]">
@@ -30,12 +35,34 @@ export function Header() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <button className="px-4 py-2 text-sm tm-btn tm-btn--ghost">
-              Log ind
-            </button>
-            <button className="px-[18px] py-2.5 text-sm tm-btn tm-btn--primary">
-              Start gratis
-            </button>
+            {isAuthenticated ? (
+              <>
+                <span className="hidden sm:inline text-tm-ink-2 text-sm">
+                  {userName}
+                </span>
+                <button
+                  onClick={() => logout()}
+                  className="px-4 py-2 text-sm tm-btn tm-btn--ghost"
+                >
+                  Log ud
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => login("/")}
+                  className="px-4 py-2 text-sm tm-btn tm-btn--ghost"
+                >
+                  Log ind
+                </button>
+                <button
+                  onClick={() => login("/")}
+                  className="px-[18px] py-2.5 text-sm tm-btn tm-btn--primary"
+                >
+                  Start gratis
+                </button>
+              </>
+            )}
           </div>
         </nav>
       </div>
