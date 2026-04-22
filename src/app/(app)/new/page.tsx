@@ -29,7 +29,7 @@ export default function NewQuotePage() {
             <label className="block mb-3 font-semibold text-[11px] text-tm-ink-3 uppercase tracking-[0.5px]">
               Kunde
             </label>
-            <div className="flex items-center gap-3 p-3.5 border border-tm-line rounded-[10px] bg-tm-paper">
+            <div className="flex items-center gap-3 bg-tm-paper p-3.5 border border-tm-line rounded-[10px]">
               <div className="flex justify-center items-center bg-tm-sand rounded-full w-9 h-9 font-display font-semibold text-tm-terracotta text-xs">
                 HS
               </div>
@@ -37,7 +37,7 @@ export default function NewQuotePage() {
                 <div className="font-semibold text-sm leading-tight">
                   Henrik Sørensen
                 </div>
-                <div className="text-tm-ink-3 text-xs mt-0.5">
+                <div className="mt-0.5 text-tm-ink-3 text-xs">
                   Rødovrevej 41 · 2610 Rødovre
                 </div>
               </div>
@@ -54,17 +54,17 @@ export default function NewQuotePage() {
             </label>
             <div className="bg-tm-paper border border-tm-line rounded-xl">
               <textarea
-                className="bg-transparent border-none outline-none w-full p-5 text-tm-ink text-[15px] leading-relaxed resize-vertical"
+                className="bg-transparent p-5 border-none outline-none w-full text-[15px] text-tm-ink leading-relaxed resize-vertical"
                 style={{ minHeight: 180, fontFamily: "var(--font-sans)" }}
                 placeholder="Beskriv opgaven så præcist som muligt — antal, størrelser, materialeønsker, særlige forhold..."
                 defaultValue="Udskiftning af 4 trævinduer i stueetagen mod gaden. Velfac-standard, hvidmalet. Skal fjerne gamle karme, efterisolere omkring og malerbehandle indvendigt. Kunden ønsker start inden 1. maj."
               />
-              <div className="flex items-center gap-2 px-5 py-3 border-t border-tm-line">
+              <div className="flex items-center gap-2 px-5 py-3 border-tm-line border-t">
                 <button className="flex items-center gap-1.5 bg-tm-orange-50 px-3 py-1.5 border border-tm-line rounded-full font-semibold text-tm-orange-600 text-xs cursor-pointer">
                   <Icon name="sparkles" size={13} /> Indtal i stedet
                 </button>
                 <div className="flex-1" />
-                <span className="text-tm-muted text-[11px]">
+                <span className="text-[11px] text-tm-muted">
                   Jo mere du beskriver, jo bedre udkast
                 </span>
               </div>
@@ -75,7 +75,7 @@ export default function NewQuotePage() {
           <section className="mt-10">
             <label className="block mb-3 font-semibold text-[11px] text-tm-ink-3 uppercase tracking-[0.5px]">
               Skabelon{" "}
-              <span className="font-normal normal-case text-tm-muted">
+              <span className="font-normal text-tm-muted normal-case">
                 (valgfri)
               </span>
             </label>
@@ -103,7 +103,7 @@ export default function NewQuotePage() {
                       {t.name}
                     </span>
                     {isSelected && (
-                      <span className="font-semibold text-tm-green text-[11px]">
+                      <span className="font-semibold text-[11px] text-tm-green">
                         ✓
                       </span>
                     )}
@@ -114,7 +114,7 @@ export default function NewQuotePage() {
           </section>
 
           {/* ── Actions ── */}
-          <div className="flex gap-3 mt-12 pt-8 border-t border-tm-line">
+          <div className="flex gap-3 mt-12 pt-8 border-tm-line border-t">
             <button className="px-5 py-2.5 text-sm tm-btn tm-btn--primary">
               <Icon name="sparkles" size={16} /> Generer med AI
             </button>
